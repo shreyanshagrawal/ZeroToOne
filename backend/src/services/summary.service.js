@@ -228,22 +228,29 @@ const buildDevExplanation = (role, keyExports, imports) => {
   const actions = inferVerbs(keyExports);
   const domains = inferDomains(imports);
   
-  let explanation = `Developer Note: This file primarily functions as a ${role.toLowerCase().replace('.', '')}. `;
+  let explanation = `PURPOSE\nThis file functions as a ${role.toLowerCase().replace('.', '')}.\n\n`;
   
+  explanation += `KEY LOGIC\n`;
   if (actions.length > 0) {
-    explanation += `Functionally, it handles ${actions.join(', and ')}. `;
+    explanation += `• Handles operations involving: ${actions.join(', ')}\n`;
+  }
+  if (keyExports.length > 0) {
+    explanation += `• Exposes primary entities: ${keyExports.slice(0, 5).join(', ')}\n`;
+  }
+  if (actions.length === 0 && keyExports.length === 0) {
+    explanation += `• General execution flow logic\n`;
+  }
+  
+  explanation += `\nDEPENDENCIES\n`;
+  if (domains.length > 0) {
+    explanation += `• Integrates with ${domains.join(', ')}\n`;
+  }
+  if (imports.length > 0) {
+    explanation += `• Pulls in ${imports.length} internal/external modules\n`;
   } else {
-    explanation += `Functionally, it handles general execution tied to its exports. `;
+    explanation += `• Completely isolated with zero dependencies\n`;
   }
 
-  if (domains.length > 0) {
-    explanation += `It orchestrates this by pulling in dependencies associated with ${domains.join(', and ')}. `;
-  }
-  
-  if (keyExports.length > 0) {
-    explanation += `Specifically, it exposes ${keyExports.slice(0, 4).join(', ')}${keyExports.length > 4 ? ` along with ${keyExports.length - 4} other modules` : ''} to the broader architecture.`;
-  }
-  
   return explanation;
 };
 

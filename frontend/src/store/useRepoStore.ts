@@ -26,13 +26,18 @@ interface RepoState {
   setSearchedRepo: (repo: Repo | null) => void;
   analyzeRepo: (url: string) => Promise<void>;
   toggleFolder: (id: string) => void;
-  selectFile: (id: string) => void;
+  selectFile: (id: string, skipHistorySync?: boolean) => Promise<void>;
   toggleDeepView: () => Promise<void>;
   
   setSearchQuery: (q: string) => void;
   setSearchOpen: (open: boolean) => void;
   setAIResult: (result: AISearchResult, query: string) => void;
   clearAIResult: () => void;
+  
+  history: string[];
+  historyIndex: number;
+  goBack: () => void;
+  goForward: () => void;
 }
 
 const API_BASE = 'http://localhost:3000/api';
@@ -158,11 +163,34 @@ export const useRepoStore = create<RepoState>((set, get) => ({
     });
   },
 
-  selectFile: async (id: string) => {
+  history: [],
+  historyIndex: -1,
+
+  selectFile: async (id: string, skipHistorySync = false) => {
     const aid = get().analysisId;
     if (!aid) return;
 
-    set({ selectedFileId: id, selectedFile: null });
+    if (!skipHistorySync) {
+        set((state) => {
+            const newHistory = state.history.slice(0, state.historyIndex + 1);
+            newHistory.push(id);
+            return {
+                history: newHistory,
+                historyIndex: newHistory.length - 1
+            };
+        });
+    }
+
+    // Auto-expand tree folders
+    const { fileTree, openFolders } = get();
+    const nextOpen = new Set(openFolders);
+    let curr = fileTree.find(f => f.id === id);
+    while (curr && curr.parent) {
+      nextOpen.add(curr.parent);
+      curr = fileTree.find(f => f.id === curr!.parent);
+    }
+
+    set({ selectedFileId: id, selectedFile: null, openFolders: nextOpen });
     
     try {
        const res = await fetch(`${API_BASE}/file-summary?analysisId=${aid}&file=${encodeURIComponent(id)}`);
@@ -218,4 +246,22 @@ export const useRepoStore = create<RepoState>((set, get) => ({
   },
   
   clearAIResult: () => set({ aiResult: null, aiSearchQuery: '' }),
+  
+  goBack: () => {
+    const { history, historyIndex, selectFile } = get();
+    if (historyIndex > 0) {
+      const idx = historyIndex - 1;
+      set({ historyIndex: idx });
+      selectFile(history[idx], true);
+    }
+  },
+
+  goForward: () => {
+    const { history, historyIndex, selectFile } = get();
+    if (historyIndex < history.length - 1) {
+      const idx = historyIndex + 1;
+      set({ historyIndex: idx });
+      selectFile(history[idx], true);
+    }
+  }
 }));
