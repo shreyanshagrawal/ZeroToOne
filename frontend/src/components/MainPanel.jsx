@@ -49,7 +49,7 @@ const MainPanel = memo(({ file, summary, error, onSelectFile }) => {
     );
   }
 
-  const isDeep = !!summary.deep_technical_view;
+  const isDeep = !!summary.deep_explanation;
 
   const toggleDeepView = async () => {
      setIsToggling(true);
@@ -84,67 +84,28 @@ const MainPanel = memo(({ file, summary, error, onSelectFile }) => {
                  </button>
               </div>
            </div>
-           
-           {/* Importance Badge */}
-           {summary.importance && (
-             <div className="hidden sm:flex flex-col items-end">
-               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Importance</span>
-               <div className={`px-3 py-1 rounded-full text-sm font-bold shadow-sm ${
-                 summary.importance === 'High' ? 'bg-red-100 text-red-700 ring-1 ring-red-200' : 
-                 summary.importance === 'Medium' ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200' : 
-                 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
-               }`}>
-                 {summary.importance}
-               </div>
-             </div>
-           )}
         </div>
       </div>
 
       <div className="space-y-6">
         
         {/* Core Heuristics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center">
-               <PackageOpen className="w-4 h-4 mr-2" /> Purpose
-             </h2>
-             <p className="text-slate-700 leading-relaxed font-medium">{summary.purpose || 'No specific role detected.'}</p>
-           </section>
-           
-           <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center">
-               <ShieldAlert className="w-4 h-4 mr-2" /> Not Responsible For
-             </h2>
-             <p className="text-slate-600 leading-relaxed italic">{summary.not_responsible_for}</p>
-           </section>
-        </div>
-
-        <section className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 shadow-sm">
-          <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-3 flex items-center">
-            <KeyRound className="w-4 h-4 mr-2" /> Key Logic
+        <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center">
+            <PackageOpen className="w-4 h-4 mr-2" /> Developer Explanation
           </h2>
-          <p className="text-slate-800 leading-relaxed">{summary.key_logic}</p>
+          <p className="text-slate-700 leading-relaxed font-medium">{summary.explanation || 'No explicit logic mapped to this node.'}</p>
         </section>
 
         {/* Deep Technical View Expansion */}
-        {isDeep && summary.deep_technical_view && (
+        {isDeep && summary.deep_explanation && (
           <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg text-slate-300 animate-in slide-in-from-top-4 space-y-4">
              <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center border-b border-slate-700 pb-3">
                <Cpu className="w-4 h-4 mr-2 text-blue-400" /> Deep Technical Breakdown
              </h2>
-             <div>
-                <strong className="text-white block mb-1 text-sm">Execution Flow:</strong>
-                <p className="font-mono text-xs text-blue-200 bg-slate-900 p-3 rounded">{summary.deep_technical_view.flow_inside_file}</p>
-             </div>
-             <div>
-                <strong className="text-white block mb-1 text-sm">Component Layout:</strong>
-                <p className="text-sm">{summary.deep_technical_view.function_level_explanation}</p>
-             </div>
-             <div>
-                <strong className="text-white block mb-1 text-sm">Technical Metrics:</strong>
-                <p className="text-sm text-slate-400 flex items-center"><Activity className="w-3 h-3 mr-2"/> {summary.deep_technical_view.technical_details}</p>
-             </div>
+             <pre className="font-mono text-xs whitespace-pre-wrap leading-relaxed text-blue-100">
+                {summary.deep_explanation}
+             </pre>
           </div>
         )}
         

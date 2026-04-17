@@ -185,12 +185,66 @@ const calculateImportance = (fileNode, exportsCount, role) => {
 
 // ── Summary Generation ──────────────────────────────────────────────────────
 
-const determineNotResponsibleFor = (role) => {
-  if (role.startsWith('Controller')) return 'Database direct interactions or business logic execution.';
-  if (role.startsWith('Route')) return 'Executing business logic directly; it only maps endpoints.';
-  if (role.startsWith('Data model')) return 'HTTP routing or external API fetching.';
-  if (role.startsWith('UI component')) return 'Global state mutation or backend network requests.';
-  return 'Cross-domain logic exterior to its primary namespace.';
+// ── Explanation Engine Heuristics ─────────────────────────────────────────────
+
+const VERB_MAP = {
+  create: 'resource creation', generate: 'automated generation', add: 'resource insertion', insert: 'database ingestion',
+  get: 'data retrieval', fetch: 'network fetching', read: 'state reading', list: 'collection mapping',
+  update: 'state modification', set: 'assignment', assign: 'distribution', modify: 'structural mutation',
+  delete: 'resource deletion', remove: 'garbage collection', destroy: 'teardown',
+  verify: 'validation', check: 'integrity checking', validate: 'schema enforcement', auth: 'security authorization', login: 'authentication',
+  process: 'pipeline execution', handle: 'event processing', parse: 'data parsing'
+};
+
+const DOMAIN_MAP = {
+  model: 'database models/schema', service: 'core business logic', controller: 'HTTP request handling',
+  route: 'network routing', util: 'shared structural utilities', config: 'environment configurations',
+  auth: 'security/authentication pipeline', db: 'direct database connections'
+};
+
+const inferVerbs = (exportsList) => {
+  const actions = new Set();
+  exportsList.forEach(exp => {
+    const lower = exp.toLowerCase();
+    for (const [verb, meaning] of Object.entries(VERB_MAP)) {
+      if (lower.includes(verb)) actions.add(meaning);
+    }
+  });
+  return Array.from(actions);
+};
+
+const inferDomains = (importsList) => {
+  const domains = new Set();
+  importsList.forEach(imp => {
+    const lower = imp.toLowerCase();
+    for (const [key, mapping] of Object.entries(DOMAIN_MAP)) {
+      if (lower.includes(key)) domains.add(mapping);
+    }
+  });
+  return Array.from(domains);
+};
+
+const buildDevExplanation = (role, keyExports, imports) => {
+  const actions = inferVerbs(keyExports);
+  const domains = inferDomains(imports);
+  
+  let explanation = `Developer Note: This file primarily functions as a ${role.toLowerCase().replace('.', '')}. `;
+  
+  if (actions.length > 0) {
+    explanation += `Functionally, it handles ${actions.join(', and ')}. `;
+  } else {
+    explanation += `Functionally, it handles general execution tied to its exports. `;
+  }
+
+  if (domains.length > 0) {
+    explanation += `It orchestrates this by pulling in dependencies associated with ${domains.join(', and ')}. `;
+  }
+  
+  if (keyExports.length > 0) {
+    explanation += `Specifically, it exposes ${keyExports.slice(0, 4).join(', ')}${keyExports.length > 4 ? ` along with ${keyExports.length - 4} other modules` : ''} to the broader architecture.`;
+  }
+  
+  return explanation;
 };
 
 /**
@@ -203,55 +257,54 @@ const summarizeFile = (fileNode, content) => {
   const imports = fileNode.imports || fileNode.dependencies || [];
   const usedBy = fileNode.used_by || [];
 
-  const importanceScore = calculateImportance(fileNode, keyExports.length, role);
-  let importanceDesc = 'Low';
-  if (importanceScore > 6) importanceDesc = 'High';
-  else if (importanceScore > 3) importanceDesc = 'Medium';
-  
-  let keyLogic = 'Contains basic variable or configuration data.';
-  if (keyExports.length > 0) {
-    if (keyExports.length <= 4) {
-      keyLogic = `Exports specific logic modules: ${keyExports.join(', ')}`;
-    } else {
-      keyLogic = `Extensive helper/util file exposing ${keyExports.slice(0, 3).join(', ')} and ${keyExports.length - 3} others.`;
-    }
-  }
-
-  // Combine shared dependencies for related files
-  const relatedFiles = [...new Set([...imports, ...usedBy])].slice(0, 5);
+  const explanation = buildDevExplanation(role, keyExports, imports);
 
   return {
     file: fileNode.path,
-    purpose: role,
-    importance: importanceDesc,
-    key_logic: keyLogic,
-    not_responsible_for: determineNotResponsibleFor(role),
+    explanation: explanation,
     imports: imports,
     used_by: usedBy,
-    related_files: relatedFiles,
-    exports: keyExports,
-    rawImportance: importanceScore
+    related_files: [...new Set([...imports, ...usedBy])].slice(0, 5),
+    exports: keyExports
   };
 };
 
 /**
- * Generates an expanded Deep Technical View dynamically by scanning execution flows.
+ * Generates an expanded Deep Technical Explanation dynamically.
  */
 const getDeepSummary = (summaryObj, content) => {
-  // Extract function blocks or internal class behaviors heuristically
-  const functionSignatures = (content.match(/async function .*?\)|function .*?\)|const .*?=\s*(?:async\s*)?\(.*?\)\s*=>/g) || []).slice(0, 5);
-  
-  const internalFlow = functionSignatures.length > 0 
-    ? `File initializes executing: ${functionSignatures.map(f => f.replace(/\{|=>|=/g,'').trim()).join('; ')}`
-    : `Pure structural definitions. No functional execution pipelines detected.`;
+  const functionSignatures = (content.match(/async function .*?\)|function .*?\)|const .*?=\s*(?:async\s*)?\(.*?\)\s*=>/g) || []);
+  const tryCatchCount = (content.match(/catch\s*\(/g) || []).length;
+  const conditionalsCount = (content.match(/if\s*\(|switch\s*\(/g) || []).length;
+
+  let flowAnalysis = functionSignatures.length > 0
+    ? `The execution flow begins dynamically across ${functionSignatures.length} explicit functional closures.`
+    : `The script is structured defensively, evaluating purely top-level static state blocks without function execution chains.`;
+
+  if (conditionalsCount > 0) {
+    flowAnalysis += ` Step-by-step logic relies on ${conditionalsCount} conditional routing branches to transform its data structure.`;
+  }
+
+  let errorHandling = tryCatchCount > 0
+    ? `Failsafe Error Handling is present. It traps fatal execution exceptions across ${tryCatchCount} isolated try/catch boundaries.`
+    : `No explicit error boundaries (try/catch blocks) are detected inside this scope; errors will bubble up the call stack natively.`;
+
+  let deepExplanation = `[Function Breakdown]
+This file parses ${content.split('\\n').length} lines of code. It injects bindings for:
+${functionSignatures.slice(0,5).map(f => ` - ${f.replace(/\{|=>|=/g,'').trim()}`).join('\\n')}${functionSignatures.length > 5 ? '\\n - (and more)' : ''}
+
+[Execution & Data Flow]
+${flowAnalysis} Input parameters enter the exposed bindings, execute any domain imports synchronously/asynchronously, and yield outputs directly back to the caller.
+
+[Dependency Usage Matrix]
+${summaryObj.imports.length > 0 ? `The module heavily relies on context from: ${summaryObj.imports.map(i => i.split('/').pop()).slice(0,4).join(', ')} to map state correctly.` : `It functions independently without fetching internal network dependencies.`}
+
+[Error Handling]
+${errorHandling}`;
 
   return {
     ...summaryObj,
-    deep_technical_view: {
-      function_level_explanation: functionSignatures.length > 0 ? `Identified ${functionSignatures.length} pure functions/closures mapped to execution boundaries.` : 'Static definitions only.',
-      flow_inside_file: internalFlow,
-      technical_details: `Total logic payload maps to ${content.split('\\n').length} lines of execution. Exposes ${summaryObj.exports.length} public modules.`
-    }
+    deep_explanation: deepExplanation
   };
 };
 
