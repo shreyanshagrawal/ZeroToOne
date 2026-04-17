@@ -54,13 +54,13 @@ const getRepoStructure = async (req, res, next) => {
  */
 const getFileSummary = async (req, res, next) => {
   try {
-    const { analysisId, file } = req.query;
+    const { analysisId, file, type } = req.query;
 
     if (!analysisId) {
       return next(new AppError('analysisId query parameter is required.', 400));
     }
 
-    const result = githubService.getFileSummary(analysisId, file);
+    const result = githubService.getFileSummary(analysisId, file, type);
 
     return res.status(200).json({
       status: 'success',

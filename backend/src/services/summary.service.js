@@ -185,59 +185,73 @@ const calculateImportance = (fileNode, exportsCount, role) => {
 
 // ── Summary Generation ──────────────────────────────────────────────────────
 
-/**
- * Generates a human-readable summary string from extracted data.
- */
-const buildSummaryText = (role, keyExports, dependencies, usedBy) => {
-  const lines = [];
-
-  lines.push(role);
-
-  if (keyExports.length > 0) {
-    if (keyExports.length <= 3) {
-      lines.push(`Exports: ${keyExports.join(', ')}.`);
-    } else {
-      // Helper-heavy: group
-      lines.push(`Exports ${keyExports.length} members: ${keyExports.slice(0, 3).join(', ')} and ${keyExports.length - 3} more.`);
-    }
-  }
-
-  if (dependencies.length > 0) {
-    lines.push(`Depends on ${dependencies.length} internal module(s).`);
-  }
-
-  if (usedBy.length > 0) {
-    lines.push(`Used by ${usedBy.length} file(s).`);
-  }
-
-  return lines.join(' ');
+const determineNotResponsibleFor = (role) => {
+  if (role.startsWith('Controller')) return 'Database direct interactions or business logic execution.';
+  if (role.startsWith('Route')) return 'Executing business logic directly; it only maps endpoints.';
+  if (role.startsWith('Data model')) return 'HTTP routing or external API fetching.';
+  if (role.startsWith('UI component')) return 'Global state mutation or backend network requests.';
+  return 'Cross-domain logic exterior to its primary namespace.';
 };
 
 /**
- * Generate a summary object for a single file node.
- *
- * @param {object} fileNode - Tree node with { name, path, dependencies, used_by }
- * @param {string} content  - Raw file content string
- * @returns {object} Summary object
+ * Generate a summary object for a single file node. (type=basic)
  */
 const summarizeFile = (fileNode, content) => {
   const ext = path.extname(fileNode.name);
   const role = inferRole(fileNode.path, fileNode.name);
   const keyExports = extractKeyLogic(content, ext);
-  const dependencies = fileNode.dependencies || [];
+  const imports = fileNode.imports || fileNode.dependencies || [];
   const usedBy = fileNode.used_by || [];
 
-  const importance = calculateImportance(fileNode, keyExports.length, role);
-  const summary = buildSummaryText(role, keyExports, dependencies, usedBy);
+  const importanceScore = calculateImportance(fileNode, keyExports.length, role);
+  let importanceDesc = 'Low';
+  if (importanceScore > 6) importanceDesc = 'High';
+  else if (importanceScore > 3) importanceDesc = 'Medium';
+  
+  let keyLogic = 'Contains basic variable or configuration data.';
+  if (keyExports.length > 0) {
+    if (keyExports.length <= 4) {
+      keyLogic = `Exports specific logic modules: ${keyExports.join(', ')}`;
+    } else {
+      keyLogic = `Extensive helper/util file exposing ${keyExports.slice(0, 3).join(', ')} and ${keyExports.length - 3} others.`;
+    }
+  }
+
+  // Combine shared dependencies for related files
+  const relatedFiles = [...new Set([...imports, ...usedBy])].slice(0, 5);
 
   return {
     file: fileNode.path,
-    role,
-    summary,
-    exports: keyExports,
-    dependencies,
+    purpose: role,
+    importance: importanceDesc,
+    key_logic: keyLogic,
+    not_responsible_for: determineNotResponsibleFor(role),
+    imports: imports,
     used_by: usedBy,
-    importance,
+    related_files: relatedFiles,
+    exports: keyExports,
+    rawImportance: importanceScore
+  };
+};
+
+/**
+ * Generates an expanded Deep Technical View dynamically by scanning execution flows.
+ */
+const getDeepSummary = (summaryObj, content) => {
+  // Extract function blocks or internal class behaviors heuristically
+  const functionSignatures = (content.match(/async function .*?\)|function .*?\)|const .*?=\s*(?:async\s*)?\(.*?\)\s*=>/g) || []).slice(0, 5);
+  
+  const internalFlow = functionSignatures.length > 0 
+    ? `File initializes executing: ${functionSignatures.map(f => f.replace(/\{|=>|=/g,'').trim()).join('; ')}`
+    : `Pure structural definitions. No functional execution pipelines detected.`;
+
+  return {
+    ...summaryObj,
+    deep_technical_view: {
+      function_level_explanation: functionSignatures.length > 0 ? `Identified ${functionSignatures.length} pure functions/closures mapped to execution boundaries.` : 'Static definitions only.',
+      flow_inside_file: internalFlow,
+      technical_details: `Total logic payload maps to ${content.split('\\n').length} lines of execution. Exposes ${summaryObj.exports.length} public modules.`
+    }
   };
 };
 
@@ -246,4 +260,5 @@ module.exports = {
   inferRole,
   extractKeyLogic,
   calculateImportance,
+  getDeepSummary
 };

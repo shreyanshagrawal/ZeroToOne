@@ -8,7 +8,7 @@ const AppError = require('../utils/AppError');
 const store = require('../utils/store');
 const { asyncPool } = require('../utils/concurrency');
 const { generateFileTree } = require('./tree.service');
-const { summarizeFile } = require('./summary.service');
+const { summarizeFile, getDeepSummary } = require('./summary.service');
 const { search } = require('./search.service');
 
 const execAsync = util.promisify(exec);
@@ -182,17 +182,24 @@ const getRepoStructure = (analysisId) => {
 /**
  * Return summary for a specific file, or all summaries if no filePath given.
  */
-const getFileSummary = (analysisId, filePath) => {
+const getFileSummary = (analysisId, filePath, type = 'basic') => {
   const cached = store.get(analysisId);
   if (!cached) {
     throw new AppError('Analysis not found or expired. Please re-analyze the repository.', 404);
   }
 
   if (filePath) {
-    const summary = cached.summaries.find((s) => s.file === filePath);
+    let summary = cached.summaries.find((s) => s.file === filePath);
     if (!summary) {
       throw new AppError(`No summary found for file: ${filePath}`, 404);
     }
+    
+    // Inject Deep Technical View on demand
+    if (type === 'deep') {
+      const rawContent = cached.searchableFiles.find((f) => f.path === filePath)?.content || '';
+      summary = getDeepSummary(summary, rawContent);
+    }
+    
     return summary;
   }
 

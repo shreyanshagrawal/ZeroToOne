@@ -95,7 +95,7 @@ export default function App() {
     }
   };
 
-  const handleSelectFile = useCallback(async (filePath, customAid = null) => {
+  const handleSelectFile = useCallback(async (filePath, customAid = null, viewType = 'basic') => {
     const aidToUse = customAid || analysisId;
     if (!aidToUse) return;
     
@@ -103,7 +103,7 @@ export default function App() {
     setSummaryData(null); // Clear previous to trigger loading pulse
     
     try {
-      const res = await fetch(`${API_BASE}/file-summary?analysisId=${aidToUse}&file=${encodeURIComponent(filePath)}`);
+      const res = await fetch(`${API_BASE}/file-summary?analysisId=${aidToUse}&file=${encodeURIComponent(filePath)}&type=${viewType}`);
       const json = await res.json();
       if (json.status === 'success') {
         // Backend now securely returns a single object if file query is passed
@@ -150,6 +150,7 @@ export default function App() {
             file={activeFile} 
             summary={summaryData} 
             error={error} 
+            onSelectFile={handleSelectFile}
           />
         </div>
       </div>
