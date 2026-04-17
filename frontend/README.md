@@ -1,16 +1,59 @@
-# React + Vite
+# CodeMap AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A developer tool for understanding any GitHub codebase in seconds — built with React, TypeScript, Tailwind CSS, Zustand, and React Router.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Then open http://localhost:5173
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **React 18** + **TypeScript**
+- **Vite** — blazing fast dev server
+- **Tailwind CSS** — utility-first styling
+- **Zustand** — lightweight state management
+- **React Router v6** — client-side routing
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Project Structure
+
+```
+src/
+  components/
+    layout/       # SidebarLayout, Topbar
+    repo/         # RepoOverview (right panel)
+    file/         # FolderTree, FileSummaryPanel, Breadcrumbs
+    search/       # SearchBar with dropdown
+    ui/           # LoadingOverlay
+  pages/
+    LandingPage.tsx     # Hero + URL input
+    RepoExplorer.tsx    # File tree + content + right panel
+  store/
+    useRepoStore.ts     # Zustand global state
+  data/
+    mockData.ts         # Repos, file tree, summaries, search results
+  hooks/
+    useAnalyze.ts       # Analyze + navigate hook
+  types/
+    index.ts            # TypeScript interfaces
+  utils/
+    cn.ts               # className helper
+```
+
+## Features
+
+- **Landing page** — GitHub URL input, "Analyze Repository" CTA, suggested repos
+- **Animated loading overlay** — step-by-step analysis progress
+- **File tree** — collapsible folders, file selection with color-coded extensions
+- **File summary panel** — AI-generated description, tags, syntax-highlighted code preview
+- **Right panel** — file stats, function list with complexity bars
+- **Search** — dropdown with file and function results
+- **Sidebar** — recent repos, user profile
+
+## API Integration
+
+All data lives in `src/data/mockData.ts`. To connect a real API, replace the mock data in `useRepoStore.ts` with your fetch calls — the types in `src/types/index.ts` define the expected shapes.

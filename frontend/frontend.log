@@ -1,0 +1,13 @@
+
+> codemap-ai@0.1.0 dev
+> vite
+
+Re-optimizing dependencies because lockfile has changed
+
+  VITE v5.4.21  ready in 219 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+3:32:49 AM [vite] hmr update /src/index.css, /src/pages/LandingPage.tsx, /src/pages/RepoResultPage.tsx, /src/pages/AISearchResultPage.tsx, /src/components/ui/LoadingOverlay.tsx, /src/components/layout/SidebarLayout.tsx, /src/components/file/Breadcrumbs.tsx, /src/components/file/FolderTree.tsx, /src/components/file/FileSummaryPanel.tsx, /src/components/repo/RepoOverview.tsx, /src/components/search/SearchBar.tsx
+3:33:18 AM [vite] hmr update /src/components/search/SearchBar.tsx, /src/index.css
+3:33:33 AM [vite] hmr update /src/index.css, /src/pages/LandingPage.tsx, /src/pages/RepoResultPage.tsx, /src/pages/AISearchResultPage.tsx, /src/components/ui/LoadingOverlay.tsx, /src/components/layout/SidebarLayout.tsx, /src/components/file/Breadcrumbs.tsx, /src/components/file/FolderTree.tsx, /src/components/file/FileSummaryPanel.tsx, /src/components/repo/RepoOverview.tsx, /src/components/search/SearchBar.tsx
