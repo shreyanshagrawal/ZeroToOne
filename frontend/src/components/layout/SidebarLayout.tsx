@@ -45,7 +45,7 @@ export default function SidebarLayout() {
           <rect x="10.5" y="10.5" width="7" height="7" rx="1" fill="#6b4fd8" fillOpacity="0.4"/>
           <rect x="12" y="12" width="4" height="4" rx="0.5" fill="#8b6cf0"/>
         </svg>
-        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">CodeMap AI</span>
+        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">Summation AI</span>
       </div>
 
       {/* Repo list */}
@@ -65,22 +65,6 @@ export default function SidebarLayout() {
 
       <div className="flex-1" />
 
-      {/* User profile */}
-      <div className="px-4 py-3.5 border-t border-[#1e1e24] flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6b4fd8] to-[#8b6cf0] flex items-center justify-center text-[12px] font-semibold text-white shrink-0">
-          SD
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-medium text-[#c8c8d4]">Sarah Developer</div>
-          <div className="text-[11px] text-[#5a5a6e]">Pro Plan</div>
-        </div>
-        <button className="w-7 h-7 rounded-md flex items-center justify-center text-[#5a5a6e] hover:text-[#9090a0] hover:bg-[#1a1a20] transition-colors">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-          </svg>
-        </button>
-      </div>
     </aside>
   );
 }

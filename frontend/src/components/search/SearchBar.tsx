@@ -96,15 +96,15 @@ export default function AISearchBar() {
           });
           const json = await res.json();
           if (json.status === 'success' && json.data) {
-             const exact = (json.data.exactMatches || []).map((m: any) => ({
+             const exact = (json.data.keyword || []).map((m: any) => ({
                  type: 'file' as const,
-                 name: m.item.file.split('/').pop(),
-                 path: m.item.file
+                 name: m.file.split('/').pop(),
+                 path: m.file
              }));
-             const sem = (json.data.semanticMatches || []).map((m: any) => ({
+             const sem = (json.data.semantic || []).map((m: any) => ({
                  type: 'symbol' as const,
-                 name: m.item.summary.purpose || m.item.file.split('/').pop(),
-                 path: m.item.file
+                 name: m.file.split('/').pop(),
+                 path: m.file
              }));
              
              // Deduplicate by path

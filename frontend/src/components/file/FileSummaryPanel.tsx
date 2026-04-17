@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useRepoStore } from '../../store/useRepoStore'
 import { Cpu, Maximize2, PackageOpen, LayoutTemplate, Activity } from 'lucide-react'
 import type { FileSummary } from '../../types'
@@ -11,6 +12,28 @@ const BADGE: Record<string, string> = {
   json: 'bg-[#002010] text-[#40c080]',
   md:   'bg-[#0d0d0d] text-[#808090]',
   css:  'bg-[#200018] text-[#c060b0]',
+}
+
+function ExpandableList({ items, renderItem, limit = 5 }: { items: any[], renderItem: (val: any) => React.ReactNode, limit?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? items : items.slice(0, limit);
+  const hasMore = items.length > limit;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        {visible.map(renderItem)}
+      </div>
+      {hasMore && (
+        <button 
+          onClick={() => setExpanded(!expanded)} 
+          className="text-[10px] uppercase font-bold text-[#5a5a6e] hover:text-[#9090a8] transition-colors mt-1 text-left tracking-widest border-t border-[#1e1e28] pt-2 w-full"
+        >
+          {expanded ? 'Show Less' : `+ Show ${items.length - limit} More`}
+        </button>
+      )}
+    </div>
+  );
 }
 
 export default function FileSummaryPanel() {
@@ -61,51 +84,54 @@ export default function FileSummaryPanel() {
         </div>
         
         <h3 className="text-[11px] font-bold tracking-widest text-[#5a5a6e] uppercase mb-2 mt-4">Developer Explanation</h3>
-        <p className="text-[14px] text-[#b0a8f0] leading-relaxed mb-6 bg-[#161622] p-4 rounded-lg border border-[#2a2a35] shadow-inner font-medium">
+        <p className="text-[14px] text-[#b0a8f0] leading-relaxed mb-6 bg-[#161622] p-4 rounded-lg border border-[#2a2a35] shadow-inner font-medium whitespace-pre-wrap">
           {f.explanation}
         </p>
         
         {/* Connection Matrices */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
            {/* Imports */}
            <div className="bg-[#0f0f14] p-4 rounded-lg border border-[#1e1e28]">
-             <h4 className="text-[10px] uppercase font-bold text-[#40b0d0] mb-3">Imports</h4>
+             <h4 className="text-[10px] uppercase font-bold text-[#40b0d0] mb-3 flex items-center gap-2"><PackageOpen className="w-3.5 h-3.5" /> Imports</h4>
              {f.imports && f.imports.length > 0 ? (
-               <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-2 scrollbar-thin">
-                 {f.imports.map(path => (
-                   <div key={path} onClick={() => handleLinkClick(path)} className="text-[11px] font-mono text-[#70a0c0] bg-[#162030] px-2 py-1 rounded truncate cursor-pointer hover:bg-[#1f2d42] transition-colors" title={path}>
+               <ExpandableList 
+                 items={f.imports} 
+                 renderItem={path => (
+                   <div key={path} onClick={() => handleLinkClick(path)} className="text-[11px] font-mono text-[#70a0c0] bg-[#162030] px-2 py-1.5 rounded truncate cursor-pointer hover:bg-[#1f2d42] transition-colors border border-[#1a3a5a]" title={path}>
                      {path.split('/').pop()}
                    </div>
-                 ))}
-               </div>
+                 )} 
+               />
              ) : <p className="text-[10px] text-[#5a5a6e]">No local imports mapped.</p>}
            </div>
 
            {/* Used By */}
            <div className="bg-[#0f0f14] p-4 rounded-lg border border-[#1e1e28]">
-             <h4 className="text-[10px] uppercase font-bold text-[#f59e0b] mb-3">Used By</h4>
+             <h4 className="text-[10px] uppercase font-bold text-[#f59e0b] mb-3 flex items-center gap-2"><LayoutTemplate className="w-3.5 h-3.5" /> Used By</h4>
              {f.used_by && f.used_by.length > 0 ? (
-               <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-2 scrollbar-thin">
-                 {f.used_by.map(path => (
-                   <div key={path} onClick={() => handleLinkClick(path)} className="text-[11px] font-mono text-[#d0a060] bg-[#2a2010] px-2 py-1 rounded truncate cursor-pointer hover:bg-[#3a2c16] transition-colors" title={path}>
+               <ExpandableList 
+                 items={f.used_by} 
+                 renderItem={path => (
+                   <div key={path} onClick={() => handleLinkClick(path)} className="text-[11px] font-mono text-[#d0a060] bg-[#2a2010] px-2 py-1.5 rounded truncate cursor-pointer hover:bg-[#3a2c16] transition-colors border border-[#4a3010]" title={path}>
                      {path.split('/').pop()}
                    </div>
-                 ))}
-               </div>
+                 )} 
+               />
              ) : <p className="text-[10px] text-[#5a5a6e]">No reverse dependencies.</p>}
            </div>
            
            {/* Exports */}
            <div className="bg-[#0f0f14] p-4 rounded-lg border border-[#1e1e28]">
-             <h4 className="text-[10px] uppercase font-bold text-[#22c55e] mb-3">Exposed Logistics</h4>
+             <h4 className="text-[10px] uppercase font-bold text-[#22c55e] mb-3 flex items-center gap-2"><Maximize2 className="w-3.5 h-3.5" /> Exposed Logistics</h4>
              {f.exports && f.exports.length > 0 ? (
-               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2">
-                 {f.exports.map(exp => (
-                   <span key={exp} className="text-[11px] font-mono text-[#60c080] bg-[#102a18] px-2 py-1 rounded border border-[#1a3a20]">
+               <ExpandableList 
+                 items={f.exports} 
+                 renderItem={exp => (
+                   <div key={exp} className="text-[11px] font-mono text-[#60c080] bg-[#102a18] px-2 py-1.5 rounded border border-[#1a3a20] truncate">
                      {exp}
-                   </span>
-                 ))}
-               </div>
+                   </div>
+                 )} 
+               />
              ) : <p className="text-[10px] text-[#5a5a6e]">No public exposed logic.</p>}
            </div>
         </div>

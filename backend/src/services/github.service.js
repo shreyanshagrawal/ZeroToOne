@@ -72,9 +72,31 @@ const analyzeRepo = async (repoUrl) => {
     throw new AppError('Invalid GitHub repository URL. Must be a public https://github.com/owner/repo format.', 400);
   }
 
-  const analysisId = `analysis_${Date.now()}`;
-  const tempId = crypto.randomUUID();
-  const targetDir = path.join(os.tmpdir(), `codemap_repo_${tempId}`);
+  const analysisId = crypto.createHash('md5').update(repoUrl).digest('hex');
+  const targetDir = path.join(process.cwd(), 'data', 'repos', analysisId);
+  const cachePath = path.join(targetDir, 'codemap_cache.json');
+
+  // If already loaded in memory
+  if (store.get(analysisId)) {
+    // Avoid re-processing if it is pending, processing, or completed
+    return { analysisId, message: 'Analysis initiated or cached', status: 'processing' };
+  }
+
+  // If already processed on disk but application restarted
+  const fsSync = require('fs');
+  if (fsSync.existsSync(cachePath)) {
+    try {
+      const diskCache = JSON.parse(fsSync.readFileSync(cachePath, 'utf8'));
+      // Populate memory mapping!
+      store.set(analysisId, diskCache);
+      return { analysisId, message: 'Repo loaded from persistent disk cache', status: 'processing' };
+    } catch (err) {
+      console.warn("Failed to load disk cache, rebuilding.", err);
+    }
+  }
+
+  // Ensure target dir exists
+  fsSync.mkdirSync(targetDir, { recursive: true });
 
   // Initialize store entry into pending state immediately 
   store.set(analysisId, {
@@ -83,14 +105,19 @@ const analyzeRepo = async (repoUrl) => {
     structure: [],
     summaries: [],
     searchableFiles: [],
-    progress: 'Cloning repository...'
+    progress: 'Preparing repository...'
   });
 
   // Background Processing Closure
   (async () => {
     try {
-      // 1. Shallow clone
-      await execAsync(`git clone --depth 1 "${repoUrl}" "${targetDir}"`);
+      // 1. Clone repository (skip if .git config exists)
+      const isCloned = fsSync.existsSync(path.join(targetDir, '.git'));
+      if (!isCloned) {
+        store.set(analysisId, { ...store.get(analysisId), progress: 'Cloning repository...' });
+        await execAsync(`git clone --depth 1 "${repoUrl}" "${targetDir}"`);
+      }
+
       store.set(analysisId, { ...store.get(analysisId), progress: 'Extracting file tree...' });
 
       // 2. Generate file tree with dependency mapping
@@ -117,13 +144,18 @@ const analyzeRepo = async (repoUrl) => {
       });
 
       // 5. Finalize analysis cache
-      store.set(analysisId, {
+      const finalState = {
         status: 'completed',
         repoUrl,
         structure: fileTree,
         summaries,
         searchableFiles,
-      }, 60 * 60 * 1000); // Bump TTL to 1 hour after successful compilation
+      };
+
+      store.set(analysisId, finalState);
+      
+      // Save cache to disk to deduplicate future cold boots
+      await fs.writeFile(cachePath, JSON.stringify(finalState), 'utf8');
 
     } catch (error) {
       console.error(`[Background Analysis Failed] ${analysisId}:`, error);
@@ -131,13 +163,10 @@ const analyzeRepo = async (repoUrl) => {
         status: 'failed',
         error: error.message,
         repoUrl
-      }, 15 * 60 * 1000); // Retain error logs for 15 mins
-    } finally {
-      // Mandatory cleanup
-      try {
-        await fs.rm(targetDir, { recursive: true, force: true });
-      } catch (cleanupError) {
-        console.error(`[Cleanup] Failed to remove ${targetDir}:`, cleanupError);
+      });
+      // Cleanup targetDir ONLY on extraction failure
+      if (fsSync.existsSync(targetDir)) {
+         fsSync.rmSync(targetDir, { recursive: true, force: true });
       }
     }
   })();

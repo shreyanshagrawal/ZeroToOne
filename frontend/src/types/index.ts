@@ -30,6 +30,8 @@ export interface FileSummary {
   used_by: string[];
   related_files: string[];
   exports: string[];
+  stats: { label: string; value: string }[];
+  functions: { name: string; description: string; complexity: number }[];
 }
 
 export interface SearchResult {
