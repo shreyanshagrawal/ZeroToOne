@@ -9,12 +9,16 @@ const AppError = require('./utils/AppError');
 // Connect to Database
 connectDB();
 
-
 const app = express();
 
 const corsOptions = {
-  origin: '*',
-  // removed credentials: true since it contradicts wildcard origin in strict browsers
+  origin: [
+    'https://zero-to-one-blond.vercel.app',
+    'http://localhost:5173', // Local frontend
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle preflight requests
