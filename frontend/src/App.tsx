@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import SidebarLayout from './components/layout/SidebarLayout'
 import Topbar from './components/layout/Topbar'
 import LandingPage from './pages/LandingPage'
@@ -12,10 +12,18 @@ import { useRepoStore } from './store/useRepoStore'
 export default function App() {
   const restoreSession = useRepoStore(s => s.restoreSession);
   const isRestoring = useRepoStore(s => s.isRestoring);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    restoreSession();
-  }, [restoreSession]);
+    restoreSession().then(() => {
+      // After restore, if we had an active session, go back to explorer.
+      // Only redirect if user is currently on the landing page.
+      const hasSession = !!useRepoStore.getState().analysisId;
+      if (hasSession && window.location.pathname === '/') {
+        navigate('/explore');
+      }
+    });
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isRestoring) {
     return (
