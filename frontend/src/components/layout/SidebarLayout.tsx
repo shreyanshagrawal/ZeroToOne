@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useRepoStore } from '../../store/useRepoStore';
 import type { Repo } from '../../types';
 
@@ -41,13 +41,31 @@ export default function SidebarLayout() {
       {/* Logo */}
       <div className="px-5 py-4 border-b border-[#1e1e24] flex items-center gap-2.5">
         <svg className="w-7 h-7" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="7" fill="#16162a"/>
-          <rect x="7" y="7" width="14" height="14" rx="2" stroke="#6b4fd8" strokeWidth="1.5" fill="none"/>
-          <rect x="10.5" y="10.5" width="7" height="7" rx="1" fill="#6b4fd8" fillOpacity="0.4"/>
-          <rect x="12" y="12" width="4" height="4" rx="0.5" fill="#8b6cf0"/>
+          <rect width="28" height="28" rx="7" fill="#16162a" />
+          <rect
+            x="7"
+            y="7"
+            width="14"
+            height="14"
+            rx="2"
+            stroke="#6b4fd8"
+            strokeWidth="1.5"
+            fill="none"
+          />
+          <rect
+            x="10.5"
+            y="10.5"
+            width="7"
+            height="7"
+            rx="1"
+            fill="#6b4fd8"
+            fillOpacity="0.4"
+          />
+          <rect x="12" y="12" width="4" height="4" rx="0.5" fill="#8b6cf0" />
         </svg>
-        <a href='/'>
-        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">Summation AI</span></a>
+        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">
+          <Link to={"/"}>Summation AI</Link>
+        </span>
       </div>
 
       {/* Repo list */}
@@ -66,7 +84,6 @@ export default function SidebarLayout() {
       </div>
 
       <div className="flex-1" />
-
     </aside>
   );
 }
