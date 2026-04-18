@@ -56,3 +56,22 @@ export interface AISearchResult {
   answer: string;
   sources: AISource[];
 }
+
+export interface GraphNode {
+  id: string;          // file path (unique key)
+  name: string;        // basename (e.g. "auth.js")
+  group: string;       // top-level folder (e.g. "src/services")
+  weight: number;      // used_by count — drives node size
+  ext?: string;        // extension for color mapping
+  tags: string[];      // semantic tags: ["controller", "auth", "backend"]
+}
+
+export interface GraphLink {
+  source: string;      // importer file path
+  target: string;      // imported file path
+}
+
+export interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
