@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const { asyncPool, stripComments } = require('../utils/concurrency');
 
-const EXCLUDE_DIRS = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '__pycache__', 'venv', 'env']);
+const EXCLUDE_DIRS = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '__pycache__', 'venv', 'env', '.DS_Store', '.next', '.cache']);
 const PARSABLE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.vue', '.py']);
 
 /**

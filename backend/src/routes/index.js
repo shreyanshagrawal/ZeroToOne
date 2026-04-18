@@ -20,4 +20,7 @@ router.get('/status/:jobId', controller.checkAnalysisStatus);
 // Server-Sent Events stream
 router.get('/stream-status/:jobId', controller.streamAnalysisStatus);
 
+// Graph data for force-directed visualisation
+router.get('/graph-data', controller.getGraphData);
+
 module.exports = router;

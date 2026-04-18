@@ -1,16 +1,32 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config/env');
+const connectDB = require('./config/db');
 const routes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
 const AppError = require('./utils/AppError');
 
+// Connect to Database
+connectDB();
+
+
 const app = express();
 
-// Middleware
-app.use(cors());
+const corsOptions = {
+  origin: '*',
+  // removed credentials: true since it contradicts wildcard origin in strict browsers
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight requests
+
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
+
+// simple request logging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
 
 // Core API Routes
 app.use('/api', routes);
