@@ -46,7 +46,8 @@ export default function SidebarLayout() {
           <rect x="10.5" y="10.5" width="7" height="7" rx="1" fill="#6b4fd8" fillOpacity="0.4"/>
           <rect x="12" y="12" width="4" height="4" rx="0.5" fill="#8b6cf0"/>
         </svg>
-        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">Summation AI</span>
+        <a href='/'>
+        <span className="text-[15px] font-semibold text-[#e8e8ea] tracking-tight">Summation AI</span></a>
       </div>
 
       {/* Repo list */}
