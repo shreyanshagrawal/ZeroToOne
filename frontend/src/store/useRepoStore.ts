@@ -48,7 +48,14 @@ interface RepoState {
   goForward: () => void;
 }
 
-const API_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
+const getApiBase = () => {
+  let url = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
+  if (!url.endsWith('/api') && !url.endsWith('/api/')) {
+    url = url.endsWith('/') ? `${url}api` : `${url}/api`;
+  }
+  return url;
+};
+const API_BASE = getApiBase();
 
 // Helper to flatten nested backend tree into flat FileNode array
 const flattenTree = (nodes: any[], indent = 0, parent?: string): FileNode[] => {

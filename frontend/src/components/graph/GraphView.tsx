@@ -125,7 +125,14 @@ function importanceLabel(weight: number): string {
 }
 
 // ── simulation constants ─────────────────────────────────────────────────────────
-const API_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
+const getApiBase = () => {
+  let url = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
+  if (!url.endsWith('/api') && !url.endsWith('/api/')) {
+    url = url.endsWith('/') ? `${url}api` : `${url}/api`;
+  }
+  return url;
+};
+const API_BASE = getApiBase();
 const TICK_PER_FRAME = 3;
 const ALPHA_DECAY    = 0.01;
 const K_REPEL        = 3000;
@@ -356,9 +363,16 @@ export default function GraphView() {
     setLoading(true);
     setError(null);
     fetch(`${API_BASE}/graph-data?analysisId=${analysisId}&maxNodes=4000`)
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) {
+           if (r.status === 404) return { status: 'pending' };
+           throw new Error('Server error');
+        }
+        return r.json();
+      })
       .then(json => {
         if (json.status === 'success') setRawData(json.data);
+        else if (json.status === 'pending') setError('Graph is being generated. Please wait...');
         else setError('Graph data unavailable.');
       })
       .catch(() => setError('Network error.'))
