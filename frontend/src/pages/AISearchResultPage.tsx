@@ -44,9 +44,8 @@ function renderAnswer(text: string) {
 }
 
 /* ── source card ─────────────────────────────────────────── */
-function SourceCard({ source, index, active, onClick }: {
+function SourceCard({ source, active, onClick }: {
   source: AISource
-  index: number
   active: boolean
   onClick: () => void
 }) {
@@ -226,7 +225,6 @@ export default function AISearchResultPage() {
               <SourceCard
                 key={src.path}
                 source={src}
-                index={i}
                 active={i === activeSource}
                 onClick={() => setActiveSource(i)}
               />

@@ -18,7 +18,7 @@ import {
   useEffect, useRef, useState, useCallback, useLayoutEffect, useMemo
 } from 'react';
 import { useRepoStore } from '../../store/useRepoStore';
-import type { GraphData, GraphNode, GraphLink } from '../../types';
+import type { GraphData, GraphNode } from '../../types';
 
 // ── colour palette ────────────────────────────────────────────────────────────
 const PALETTE = [
@@ -125,7 +125,7 @@ function importanceLabel(weight: number): string {
 }
 
 // ── simulation constants ─────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
 const TICK_PER_FRAME = 3;
 const ALPHA_DECAY    = 0.01;
 const K_REPEL        = 3000;
@@ -394,7 +394,7 @@ export default function GraphView() {
   );
 
   // ── PHYSICS ──────────────────────────────────────────────────────────────────
-  const { nodesRef, alphaRef, frozenRef, tick, reheat } = useSimulation(graphData, dims.w, dims.h);
+  const { nodesRef, frozenRef, tick, reheat } = useSimulation(graphData, dims.w, dims.h);
 
   // ── Frozen state for toolbar indicator (poll alphaRef) ───────────────────────
   const [isStable, setIsStable] = useState(false);
@@ -956,12 +956,12 @@ export default function GraphView() {
   }, [rawData.nodes]);
 
   const toggleTag = (tag: string) => {
-    setFilters(f => ({
-      ...f,
-      selectedTags: f.selectedTags.includes(tag)
-        ? f.selectedTags.filter(t => t !== tag)
-        : [...f.selectedTags, tag],
-    }));
+    setFilters({
+      ...filters,
+      selectedTags: filters.selectedTags.includes(tag)
+        ? filters.selectedTags.filter(t => t !== tag)
+        : [...filters.selectedTags, tag],
+    });
   };
 
   // ── RENDER guards ──────────────────────────────────────────────────────────
@@ -995,7 +995,7 @@ export default function GraphView() {
 
           <select
             value={filters.group}
-            onChange={e => setFilters(f => ({ ...f, group: e.target.value }))}
+            onChange={e => setFilters({ ...filters, group: e.target.value })}
             className="bg-[#111118] border border-[#2a2a35] text-[#9090a8] text-[12px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#6b4fd8]"
           >
             <option value="">All folders</option>
@@ -1007,7 +1007,7 @@ export default function GraphView() {
             <input
               type="range" min={0} max={10} step={1}
               value={filters.minWeight}
-              onChange={e => setFilters(f => ({ ...f, minWeight: +e.target.value }))}
+              onChange={e => setFilters({ ...filters, minWeight: +e.target.value })}
               className="accent-[#6b4fd8] w-24"
             />
             <span className="font-mono text-[#9090a8] w-4">{filters.minWeight}</span>

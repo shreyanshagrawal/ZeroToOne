@@ -66,7 +66,6 @@ export const mockFileTree: FileNode[] = [
 
 export const mockFileSummaries: Record<string, FileSummary> = {
   ReactDOM: {
-    id: 'ReactDOM',
     name: 'ReactDOM.ts',
     ext: 'ts',
     lines: 842,
@@ -115,7 +114,6 @@ export function createRoot(
   },
 
   ReactHooks: {
-    id: 'ReactHooks',
     name: 'ReactHooks.ts',
     ext: 'ts',
     lines: 412,
@@ -165,7 +163,6 @@ export function useEffect(
   },
 
   package: {
-    id: 'package',
     name: 'package.json',
     ext: 'json',
     lines: 48,

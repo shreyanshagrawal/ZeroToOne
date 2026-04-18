@@ -1,8 +1,7 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import AISearchBar from '../search/SearchBar'
 
 export default function Topbar() {
-  const navigate = useNavigate()
   const location = useLocation()
   const isLanding = location.pathname === '/'
 

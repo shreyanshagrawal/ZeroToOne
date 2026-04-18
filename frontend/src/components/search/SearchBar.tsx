@@ -89,7 +89,7 @@ export default function AISearchBar() {
           return;
        }
        try {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+          const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
           const res = await fetch(`${apiUrl}/search`, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },

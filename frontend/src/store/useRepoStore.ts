@@ -48,7 +48,7 @@ interface RepoState {
   goForward: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Helper to flatten nested backend tree into flat FileNode array
 const flattenTree = (nodes: any[], indent = 0, parent?: string): FileNode[] => {
@@ -258,8 +258,10 @@ export const useRepoStore = create<RepoState>((set, get) => ({
               imports: [],
               used_by: [],
               related_files: [],
-              exports: []
-          } });
+              exports: [],
+              stats: [],
+              functions: []
+          } as any });
           return;
        }
        

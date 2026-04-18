@@ -98,6 +98,7 @@ export function buildGraphData(
         group:  inferGroup(file),
         weight: used_by?.length ?? 0,
         ext:    getExt(file),
+        tags:   summary.tags ?? [],
       });
     } else {
       // If somehow the same file appears twice, keep the higher weight
