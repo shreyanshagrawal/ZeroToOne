@@ -66,13 +66,18 @@ export const mockFileTree: FileNode[] = [
 
 export const mockFileSummaries: Record<string, FileSummary> = {
   ReactDOM: {
+    file: 'src/components/ReactDOM.ts',
+    explanation: 'Entry point for the React DOM renderer. Handles mounting, unmounting, and updating React component trees into the browser DOM.',
+    imports: ['./ReactElement', './reconciler/ReactFiber', './ReactDOMRoot'],
+    used_by: ['src/index.ts', 'src/main.tsx'],
+    related_files: ['src/components/ReactHooks.ts'],
+    exports: ['render', 'createRoot', 'hydrate', 'unmountComponentAtNode'],
     name: 'ReactDOM.ts',
     ext: 'ts',
     lines: 842,
     size: '32 KB',
     complexity: 'Medium',
-    description:
-      'Entry point for the React DOM renderer. Handles mounting, unmounting, and updating React component trees into the browser DOM.',
+    description: 'Entry point for the React DOM renderer.',
     tags: ['renderer', 'DOM', 'lifecycle', 'hydration'],
     stats: [
       { label: 'Lines of code', value: '842' },
@@ -88,39 +93,21 @@ export const mockFileSummaries: Record<string, FileSummary> = {
       { name: 'createRoot()', description: 'Create a root for concurrent mode', complexity: 55 },
       { name: 'findDOMNode()', description: 'Find underlying DOM node', complexity: 25 },
     ],
-    codeSnippet: `import type { ReactElement } from './ReactElement';
-import type { FiberRoot } from './reconciler/ReactFiber';
-import { createLegacyRoot } from './ReactDOMRoot';
-
-// Legacy render API — use createRoot for concurrent features
-export function render(
-  element: ReactElement,
-  container: Element | DocumentFragment,
-  callback?: () => void
-): Component | null {
-  if (!container || !container.nodeType) {
-    throw new Error('Target container is not a DOM element');
-  }
-  return legacyRenderSubtreeIntoContainer(
-    null, element, container, false, callback
-  );
-}
-
-export function createRoot(
-  container: Element | DocumentFragment
-): RootType {
-  return new ReactDOMRoot(createFiberRoot(container, ConcurrentMode));
-}`,
   },
 
   ReactHooks: {
+    file: 'src/components/ReactHooks.ts',
+    explanation: 'Implements all built-in React hooks including useState, useEffect, useContext, useReducer, useMemo, useCallback, and useRef.',
+    imports: ['./ReactInternalTypes', './ReactSharedInternals'],
+    used_by: ['src/components/ReactDOM.ts'],
+    related_files: ['src/components/ReactDOM.ts'],
+    exports: ['useState', 'useEffect', 'useContext', 'useReducer'],
     name: 'ReactHooks.ts',
     ext: 'ts',
     lines: 412,
     size: '14 KB',
     complexity: 'Low',
-    description:
-      'Implements all built-in React hooks including useState, useEffect, useContext, useReducer, useMemo, useCallback, and useRef.',
+    description: 'Implements all built-in React hooks.',
     tags: ['hooks', 'state', 'effects', 'context'],
     stats: [
       { label: 'Lines of code', value: '412' },
@@ -135,41 +122,21 @@ export function createRoot(
       { name: 'useContext()', description: 'Subscribes to React context', complexity: 20 },
       { name: 'useReducer()', description: 'Alternative to useState', complexity: 45 },
     ],
-    codeSnippet: `import type { Dispatcher } from './ReactInternalTypes';
-import { ReactCurrentDispatcher } from './ReactSharedInternals';
-
-function resolveDispatcher(): Dispatcher {
-  const dispatcher = ReactCurrentDispatcher.current;
-  if (dispatcher === null) {
-    throw new Error('Hooks can only be called inside a function component');
-  }
-  return dispatcher;
-}
-
-export function useState<S>(
-  initialState: S | (() => S)
-): [S, Dispatch<SetStateAction<S>>] {
-  const dispatcher = resolveDispatcher();
-  return dispatcher.useState(initialState);
-}
-
-export function useEffect(
-  create: () => (() => void) | void,
-  deps?: DependencyList
-): void {
-  const dispatcher = resolveDispatcher();
-  return dispatcher.useEffect(create, deps);
-}`,
   },
 
   package: {
+    file: 'package.json',
+    explanation: 'Node.js package manifest. Defines dependencies, scripts, and project metadata for the React repository.',
+    imports: [],
+    used_by: [],
+    related_files: [],
+    exports: [],
     name: 'package.json',
     ext: 'json',
     lines: 48,
     size: '1.2 KB',
     complexity: 'Low',
-    description:
-      'Node.js package manifest. Defines dependencies, scripts, and project metadata for the React repository.',
+    description: 'Node.js package manifest.',
     tags: ['config', 'npm', 'dependencies'],
     stats: [
       { label: 'Lines', value: '48' },
@@ -179,25 +146,6 @@ export function useEffect(
       { label: 'Last modified', value: '1 week ago' },
     ],
     functions: [],
-    codeSnippet: `{
-  "name": "react",
-  "version": "19.1.0",
-  "description": "React is a JavaScript library for building user interfaces.",
-  "license": "MIT",
-  "scripts": {
-    "build": "node ./scripts/rollup/build.js",
-    "test": "jest --config jest.config.js",
-    "lint": "eslint src --ext .ts,.tsx"
-  },
-  "dependencies": {
-    "loose-envify": "^1.1.0"
-  },
-  "devDependencies": {
-    "rollup": "^3.29.4",
-    "typescript": "^5.5.3",
-    "jest": "^29.0.0"
-  }
-}`,
   },
 };
 

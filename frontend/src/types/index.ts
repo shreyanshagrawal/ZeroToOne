@@ -32,7 +32,17 @@ export interface FileSummary {
   exports: string[];
   stats: { label: string; value: string }[];
   functions: { name: string; description: string; complexity: number }[];
+  // Optional fields returned by backend / used in mock data
+  name?: string;
+  ext?: string;
+  tags?: string[];
+  lines?: number;
+  size?: string;
+  complexity?: string;
+  description?: string;
+  codeSnippet?: string;
 }
+
 
 export interface SearchResult {
   type: 'file' | 'function' | 'symbol';
