@@ -125,7 +125,7 @@ function importanceLabel(weight: number): string {
 }
 
 // ── simulation constants ─────────────────────────────────────────────────────────
-const API_BASE       = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const TICK_PER_FRAME = 3;
 const ALPHA_DECAY    = 0.01;
 const K_REPEL        = 3000;
@@ -309,12 +309,6 @@ function useSimulation(graphData: GraphData, width: number, height: number) {
 }
 
 // ── main component ────────────────────────────────────────────────────────────
-interface Filters {
-  group:        string;
-  minWeight:    number;
-  selectedTags: string[];   // multi-select — empty = all
-}
-
 export default function GraphView() {
   const { analysisId, selectedFileId, selectFile } = useRepoStore(s => ({
     analysisId:     s.analysisId,
@@ -326,7 +320,6 @@ export default function GraphView() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [hoverId,  setHoverId]  = useState<string | null>(null);
-  const [filters,  setFilters]  = useState<Filters>({ group: '', minWeight: 0, selectedTags: [] });
   const [tooltip,  setTooltip]  = useState<TooltipData | null>(null);
   const mousePosRef            = useRef({ x: 0, y: 0 });  // screen-space px
 
@@ -362,7 +355,7 @@ export default function GraphView() {
     if (!analysisId) return;
     setLoading(true);
     setError(null);
-    fetch(`${API_BASE}/graph-data?analysisId=${analysisId}&maxNodes=400`)
+    fetch(`${API_BASE}/graph-data?analysisId=${analysisId}&maxNodes=4000`)
       .then(r => r.json())
       .then(json => {
         if (json.status === 'success') setRawData(json.data);
@@ -371,6 +364,10 @@ export default function GraphView() {
       .catch(() => setError('Network error.'))
       .finally(() => setLoading(false));
   }, [analysisId]);
+
+  // ── FILTER STATE (Persisted globally) ────────────────────────────────────────────────────────
+  const filters = useRepoStore(s => s.graphFilters);
+  const setFilters = useRepoStore(s => s.setGraphFilters);
 
   // ── FILTER (memoised to prevent re-seeding the simulation on every render) ──
   const filteredNodes = useMemo(() => rawData.nodes.filter(n => {

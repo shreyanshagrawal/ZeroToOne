@@ -22,6 +22,14 @@ interface RepoState {
   aiResult: AISearchResult | null;
   aiSearchQuery: string;
 
+  isRestoring: boolean;
+  currentTab: 'explorer' | 'graph';
+  setCurrentTab: (tab: 'explorer' | 'graph') => void;
+  restoreSession: () => Promise<void>;
+
+  graphFilters: { group: string; minWeight: number; selectedTags: string[] };
+  setGraphFilters: (filters: { group: string; minWeight: number; selectedTags: string[] }) => void;
+
   setActiveRepo: (repo: Repo) => void;
   setSearchedRepo: (repo: Repo | null) => void;
   analyzeRepo: (url: string) => Promise<void>;
@@ -40,7 +48,7 @@ interface RepoState {
   goForward: () => void;
 }
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Helper to flatten nested backend tree into flat FileNode array
 const flattenTree = (nodes: any[], indent = 0, parent?: string): FileNode[] => {
@@ -85,6 +93,50 @@ export const useRepoStore = create<RepoState>((set, get) => ({
   searchOpen: false,
   aiResult: null,
   aiSearchQuery: '',
+
+  isRestoring: false,
+  currentTab: 'explorer',
+  setCurrentTab: (tab) => set({ currentTab: tab }),
+
+  graphFilters: { group: '', minWeight: 0, selectedTags: [] },
+  setGraphFilters: (filters) => set({ graphFilters: filters }),
+
+  restoreSession: async () => {
+    try {
+      const stored = localStorage.getItem('codemap_state');
+      if (!stored) return;
+      const parsed = JSON.parse(stored);
+      
+      set({ 
+        isRestoring: true, 
+        currentTab: parsed.currentTab || 'explorer',
+        repos: parsed.repos || [],
+        activeRepo: parsed.activeRepo || null,
+        searchedRepo: parsed.activeRepo || null,
+        graphFilters: parsed.graphFilters || { group: '', minWeight: 0, selectedTags: [] }
+      });
+
+      if (parsed.analysisId) {
+        set({ analysisId: parsed.analysisId, isAnalyzing: false });
+        
+        // Fetch structure to resurrect fileTree
+        const structRes = await fetch(`${API_BASE}/repo-structure?analysisId=${parsed.analysisId}`);
+        const structJson = await structRes.json();
+        if (structJson.status === 'success' && structJson.data) {
+           const flatTree = flattenTree(structJson.data.structure);
+           set({ fileTree: flatTree });
+           
+           if (parsed.selectedFileId) {
+              await get().selectFile(parsed.selectedFileId, true);
+           }
+        }
+      }
+    } catch(err) {
+      console.warn("Failed restoring local storage session:", err);
+    } finally {
+      set({ isRestoring: false });
+    }
+  },
 
   setActiveRepo: (repo) => set({ activeRepo: repo }),
   setSearchedRepo: (repo) => set({ searchedRepo: repo }),
@@ -133,10 +185,12 @@ export const useRepoStore = create<RepoState>((set, get) => ({
                 url,
             };
 
+            const filteredRepos = get().repos.filter(r => r.url !== url);
+
             set({
                 isAnalyzing: false,
                 fileTree: flatTree,
-                repos: [resolvedRepo, ...get().repos],
+                repos: [resolvedRepo, ...filteredRepos],
                 activeRepo: resolvedRepo,
                 searchedRepo: resolvedRepo
             });
@@ -265,3 +319,24 @@ export const useRepoStore = create<RepoState>((set, get) => ({
     }
   }
 }));
+
+useRepoStore.subscribe((state, prevState) => {
+   if (
+     state.analysisId !== prevState.analysisId ||
+     state.selectedFileId !== prevState.selectedFileId ||
+     state.currentTab !== prevState.currentTab ||
+     state.activeRepo !== prevState.activeRepo ||
+     state.repos !== prevState.repos ||
+     state.graphFilters !== prevState.graphFilters
+   ) {
+     const payload = {
+       analysisId: state.analysisId,
+       selectedFileId: state.selectedFileId,
+       currentTab: state.currentTab,
+       activeRepo: state.activeRepo,
+       repos: state.repos,
+       graphFilters: state.graphFilters
+     };
+     localStorage.setItem('codemap_state', JSON.stringify(payload));
+   }
+});

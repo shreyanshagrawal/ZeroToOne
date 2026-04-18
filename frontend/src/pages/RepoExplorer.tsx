@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import FolderTree from '../components/file/FolderTree'
 import Breadcrumbs from '../components/file/Breadcrumbs'
 import FileSummaryPanel from '../components/file/FileSummaryPanel'
 import RepoOverview from '../components/repo/RepoOverview'
 import GraphView from '../components/graph/GraphView'
-
-type Tab = 'explorer' | 'graph'
+import { useRepoStore } from '../store/useRepoStore'
 
 export default function RepoExplorer() {
-  const [tab, setTab] = useState<Tab>('explorer')
+  const currentTab = useRepoStore(s => s.currentTab)
+  const setCurrentTab = useRepoStore(s => s.setCurrentTab)
 
   // ── Keyboard shortcut: G → Graph, E → Explorer ─────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Don't steal keypresses when user is typing in a field
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.key === 'g' || e.key === 'G') setTab('graph')
-      if (e.key === 'e' || e.key === 'E') setTab('explorer')
+      if (e.key === 'g' || e.key === 'G') setCurrentTab('graph')
+      if (e.key === 'e' || e.key === 'E') setCurrentTab('explorer')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [setCurrentTab])
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -29,15 +29,15 @@ export default function RepoExplorer() {
       <div className="flex items-center px-4 border-b border-[#1c1c22] bg-[#0d0d0f] shrink-0">
         <TabButton
           label="Explorer" icon="explorer"
-          active={tab === 'explorer'}
+          active={currentTab === 'explorer'}
           shortcut="E"
-          onClick={() => setTab('explorer')}
+          onClick={() => setCurrentTab('explorer')}
         />
         <TabButton
           label="Graph" icon="graph"
-          active={tab === 'graph'}
+          active={currentTab === 'graph'}
           shortcut="G"
-          onClick={() => setTab('graph')}
+          onClick={() => setCurrentTab('graph')}
         />
 
         {/* Right-side context label */}
@@ -57,7 +57,7 @@ export default function RepoExplorer() {
       */}
 
       {/* Explorer panel */}
-      <div style={{ display: tab === 'explorer' ? 'flex' : 'none' }} className="flex-1 overflow-hidden">
+      <div style={{ display: currentTab === 'explorer' ? 'flex' : 'none' }} className="flex-1 overflow-hidden">
         <FolderTree />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Breadcrumbs />
@@ -67,7 +67,7 @@ export default function RepoExplorer() {
       </div>
 
       {/* Graph panel */}
-      <div style={{ display: tab === 'graph' ? 'flex' : 'none' }} className="flex-1 overflow-hidden">
+      <div style={{ display: currentTab === 'graph' ? 'flex' : 'none' }} className="flex-1 overflow-hidden">
         <GraphView />
       </div>
 

@@ -21,8 +21,12 @@ export default function LandingPage() {
     const target = (!trimmed || trimmed === 'https://github.com/')
       ? 'https://github.com/facebook/react'
       : trimmed
-    await analyzeRepo(target)
-    navigate('/result')
+    try {
+      await analyzeRepo(target)
+      navigate('/result')
+    } catch (err: any) {
+      alert(`Analysis Failed: ${err.message || err}`)
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {

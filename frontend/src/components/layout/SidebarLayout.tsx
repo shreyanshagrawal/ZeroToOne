@@ -28,10 +28,11 @@ function RepoItem({ repo, active, onClick }: { repo: Repo; active: boolean; onCl
 
 export default function SidebarLayout() {
   const navigate = useNavigate();
-  const { repos, activeRepo, setActiveRepo } = useRepoStore();
+  const { repos, activeRepo, setActiveRepo, analyzeRepo } = useRepoStore();
 
   function handleRepoClick(repo: Repo) {
     setActiveRepo(repo);
+    analyzeRepo(repo.url);
     navigate('/explore');
   }
 
