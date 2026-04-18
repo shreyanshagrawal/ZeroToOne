@@ -317,10 +317,11 @@ function useSimulation(graphData: GraphData, width: number, height: number) {
 
 // ── main component ────────────────────────────────────────────────────────────
 export default function GraphView() {
-  const { analysisId, selectedFileId, selectFile } = useRepoStore(s => ({
+  const { analysisId, selectedFileId, selectFile, isAnalyzing } = useRepoStore(s => ({
     analysisId:     s.analysisId,
     selectedFileId: s.selectedFileId,
     selectFile:     s.selectFile,
+    isAnalyzing:    s.isAnalyzing,
   }));
 
   const [rawData,  setRawData]  = useState<GraphData>({ nodes: [], links: [] });
@@ -360,6 +361,11 @@ export default function GraphView() {
   // ── DATA FETCH ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!analysisId) return;
+    if (isAnalyzing) {
+      setError('Graph is being generated. Please wait...');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     fetch(`${API_BASE}/graph-data?analysisId=${analysisId}&maxNodes=4000`)
@@ -377,7 +383,7 @@ export default function GraphView() {
       })
       .catch(() => setError('Network error.'))
       .finally(() => setLoading(false));
-  }, [analysisId]);
+  }, [analysisId, isAnalyzing]);
 
   // ── FILTER STATE (Persisted globally) ────────────────────────────────────────────────────────
   const filters = useRepoStore(s => s.graphFilters);
